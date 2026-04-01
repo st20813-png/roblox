@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入 Roblox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #111214;
+            overflow: hidden; /* 防止背景滾動 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        /* 傾斜背景圖塊網格設定 */
+        .bg-grid-wrapper {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            transform: rotate(-12deg);
+            z-index: -2;
+            pointer-events: none;
+        }
+        .bg-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            width: 100%;
+            height: 100%;
+            opacity: 0.45; /* 降低亮度以凸顯中間登入框 */
+        }
+        .tile {
+            width: 100%;
+            aspect-ratio: 1;
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.8);
+        }
+
+        /* 輸入框的聚焦效果 */
+        input:focus {
+            outline: none;
+            border-color: #ffffff;
+            background-color: #111214;
+        }
+        input::placeholder {
+            color: #888c90;
+        }
+    </style>
+</head>
+<body class="text-white flex flex-col h-screen relative">
+
+    <!-- 傾斜遊戲圖塊背景 -->
+    <div class="bg-grid-wrapper" aria-hidden="true">
+        <div class="bg-grid" id="bg-grid"></div>
+    </div>
+    <!-- 黑色半透明遮罩層，讓畫面更暗一點 -->
+    <div class="absolute inset-0 bg-black/50 z-[-1] pointer-events-none"></div>
+
+    <!-- 頂部導航欄 (Navbar) -->
+    <nav class="w-full h-14 bg-[#111214]/95 border-b border-gray-800 flex items-center justify-between px-6 z-50 fixed top-0">
+        <!-- 左側：Logo 與 連結 -->
+        <div class="flex items-center gap-6">
+            <a href="#" class="text-white hover:text-gray-300 transition-colors">
+                <!-- Roblox Logo SVG -->
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-[30px] h-[30px]">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M5.275 2.5L2.5 18.725L18.725 21.5L21.5 5.275L5.275 2.5ZM13.842 13.626L10.373 14.22L9.779 10.751L13.248 10.158L13.842 13.626Z" />
+                </svg>
+            </a>
+            
+            <div class="hidden md:flex items-center gap-5 text-[15px] font-bold tracking-wide">
+                <!-- 根據您的截圖，左上方確實顯示為"圖表" -->
+                <a href="#" class="hover:text-gray-300 transition-colors">圖表</a>
+                <a href="#" class="hover:text-gray-300 transition-colors">市集</a>
+                <a href="#" class="hover:text-gray-300 transition-colors">創作</a>
+                <a href="#" class="hover:text-gray-300 transition-colors">Robux</a>
+            </div>
+        </div>
+
+        <!-- 中間：搜尋欄 -->
+        <div class="flex-1 max-w-[600px] mx-6 hidden md:block">
+            <div class="relative flex items-center w-full h-[34px] rounded bg-[#232527] border border-transparent focus-within:border-white transition-colors">
+                <svg class="w-[18px] h-[18px] ml-3 text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" placeholder="搜尋" class="bg-transparent w-full h-full pl-3 pr-4 outline-none text-[15px] text-white">
+            </div>
+        </div>
+
+        <!-- 右側：註冊按鈕 -->
+        <div class="flex items-center">
+            <button class="bg-[#3b82f6] hover:bg-blue-600 text-white px-4 py-[6px] rounded text-[15px] font-bold transition-colors">
+                註冊
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主要內容區 (中間登入視窗) -->
+    <main class="flex-1 flex items-center justify-center p-4 relative z-10 mt-14">
+        <div class="bg-[#2b2d31] w-full max-w-[400px] rounded-lg p-8 shadow-2xl flex flex-col items-center">
+            
+            <h1 class="text-[26px] font-bold text-white mb-6">登入 Roblox</h1>
+            
+            <div class="w-full flex flex-col gap-4">
+                <input 
+                    type="text" 
+                    id="username"
+                    placeholder="使用者名稱 / 電子郵件地址 / 手機號碼" 
+                    class="w-full bg-[#111214] border border-gray-600 rounded-lg px-4 py-[10px] text-[15px] text-white transition-colors"
+                >
+                
+                <input 
+                    type="password" 
+                    id="password"
+                    placeholder="密碼" 
+                    class="w-full bg-[#111214] border border-gray-600 rounded-lg px-4 py-[10px] text-[15px] text-white transition-colors"
+                >
+                
+                <button id="login-btn" class="w-full border border-gray-400 text-gray-300 hover:bg-white/5 rounded-lg py-[10px] mt-1 transition-all duration-200 text-[15px] font-medium">
+                    登入
+                </button>
+            </div>
+            
+            <div class="mt-4 mb-2">
+                <a href="#" class="text-[13px] text-gray-400 hover:text-white transition-colors">
+                    忘記密碼或使用者名稱？
+                </a>
+            </div>
+            
+            <!-- 次要登入方式按鈕 -->
+            <div class="w-full flex flex-col gap-3 mt-4">
+                <button class="w-full bg-[#393b3d] hover:bg-[#4a4d50] text-white rounded-lg py-[10px] transition-colors text-[14px] font-medium">
+                    透過電子郵件給我一次性驗證碼
+                </button>
+                <button class="w-full bg-[#393b3d] hover:bg-[#4a4d50] text-white rounded-lg py-[10px] transition-colors text-[14px] font-medium">
+                    快速登入
+                </button>
+            </div>
+            
+            <div class="mt-6 text-[14px] text-gray-400">
+                沒有帳號？ <a href="#" class="text-white hover:underline transition-colors">註冊</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 1. 動態生成背景的傾斜遊戲圖塊
+        document.addEventListener("DOMContentLoaded", () => {
+            const grid = document.getElementById("bg-grid");
+            const numberOfTiles = 200; // 產生足夠的數量以覆蓋整個旋轉後的畫面
+            
+            for (let i = 0; i < numberOfTiles; i++) {
+                const tile = document.createElement("div");
+                tile.className = "tile";
+                // 使用 picsum 提供隨機且穩定的假圖片當作遊戲封面
+                tile.style.backgroundImage = `url('https://picsum.photos/seed/${i + 1000}/300/300')`;
+                grid.appendChild(tile);
+            }
+        });
+
+        // 2. 模擬 Roblox 登入框的輸入邏輯：當帳號密碼皆有值時，登入按鈕會亮起（變成實心白色）
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('login-btn');
+
+        function checkInputs() {
+            if (usernameInput.value.length > 0 && passwordInput.value.length > 0) {
+                loginBtn.classList.remove('border-gray-400', 'text-gray-300', 'hover:bg-white/5');
+                loginBtn.classList.add('bg-white', 'text-black', 'border-white', 'hover:bg-gray-200');
+            } else {
+                loginBtn.classList.add('border-gray-400', 'text-gray-300', 'hover:bg-white/5');
+                loginBtn.classList.remove('bg-white', 'text-black', 'border-white', 'hover:bg-gray-200');
+            }
+        }
+
+        usernameInput.addEventListener('input', checkInputs);
+        passwordInput.addEventListener('input', checkInputs);
+    </script>
+</body>
+</html>
