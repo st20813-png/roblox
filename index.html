@@ -7,12 +7,66 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background-color: #111214;
+            background-color: #f3f6fa;
             overflow: hidden; /* 防止背景滾動 */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #334155;
         }
         
-        /* 傾斜背景圖塊網格設定 */
+        /* 液態毛玻璃特效 (Liquid Glassmorphism) */
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        .liquid-glass-nav {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        /* 輸入框的聚焦與液態效果 */
+        .input-glass {
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+        }
+        .input-glass:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+        .input-glass::placeholder {
+            color: #94a3b8;
+        }
+
+        /* 流動背景光球動畫 (Liquid Blobs) */
+        @keyframes blob-float {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            z-index: -3;
+            opacity: 0.6;
+            animation: blob-float 15s infinite alternate ease-in-out;
+            border-radius: 50%;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #bfdbfe; }
+        .blob-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: #ddd6fe; animation-delay: -5s; }
+        .blob-3 { top: 40%; left: 40%; width: 400px; height: 400px; background: #a7f3d0; animation-delay: -10s; }
+
+        /* 傾斜背景圖塊網格設定 (淺色融合版) */
         .bg-grid-wrapper {
             position: absolute;
             top: -50%;
@@ -29,85 +83,80 @@
             gap: 12px;
             width: 100%;
             height: 100%;
-            opacity: 0.45; /* 降低亮度以凸顯中間登入框 */
+            opacity: 0.12; /* 大幅降低不透明度，讓玻璃質感更明顯 */
         }
         .tile {
             width: 100%;
             aspect-ratio: 1;
             background-size: cover;
             background-position: center;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.8);
+            border-radius: 16px;
         }
 
-        /* 輸入框的聚焦效果 */
-        input:focus {
-            outline: none;
-            border-color: #ffffff;
-            background-color: #111214;
-        }
-        input::placeholder {
-            color: #888c90;
-        }
-
-        /* 自訂滾動條，讓管理員面板的表格好看點 */
+        /* 自訂滾動條 (淺色系) */
         ::-webkit-scrollbar {
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #111214;
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb {
-            background: #393b3d;
+            background: rgba(148, 163, 184, 0.5);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #4a4d50;
+            background: rgba(148, 163, 184, 0.8);
         }
     </style>
 </head>
-<body class="text-white flex flex-col h-screen relative">
+<body class="flex flex-col h-screen relative selection:bg-blue-200">
+
+    <!-- 流動光球背景 (Liquid Blobs) -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
 
     <!-- 傾斜遊戲圖塊背景 -->
     <div class="bg-grid-wrapper" aria-hidden="true">
         <div class="bg-grid" id="bg-grid"></div>
     </div>
-    <!-- 黑色半透明遮罩層，讓畫面更暗一點 -->
-    <div class="absolute inset-0 bg-black/50 z-[-1] pointer-events-none"></div>
+    
+    <!-- 白色漸變遮罩層，確保畫面柔和 -->
+    <div class="absolute inset-0 bg-white/30 z-[-1] pointer-events-none"></div>
 
-    <!-- 頂部導航欄 (Navbar) -->
-    <nav class="w-full h-14 bg-[#111214]/95 border-b border-gray-800 flex items-center justify-between px-6 z-50 fixed top-0">
+    <!-- 頂部導航欄 (Navbar) - 液態玻璃風格 -->
+    <nav class="w-full h-14 liquid-glass-nav flex items-center justify-between px-6 z-50 fixed top-0">
         <!-- 左側：Logo 與 連結 -->
         <div class="flex items-center gap-6">
-            <a href="#" class="text-white hover:text-gray-300 transition-colors">
+            <a href="#" class="text-slate-800 hover:text-blue-500 transition-colors drop-shadow-sm">
                 <!-- Roblox Logo SVG -->
                 <svg viewBox="0 0 24 24" fill="currentColor" class="w-[30px] h-[30px]">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M5.275 2.5L2.5 18.725L18.725 21.5L21.5 5.275L5.275 2.5ZM13.842 13.626L10.373 14.22L9.779 10.751L13.248 10.158L13.842 13.626Z" />
                 </svg>
             </a>
             
-            <div class="hidden md:flex items-center gap-5 text-[15px] font-bold tracking-wide">
-                <a href="#" class="hover:text-gray-300 transition-colors">圖表</a>
-                <a href="#" class="hover:text-gray-300 transition-colors">市集</a>
-                <a href="#" class="hover:text-gray-300 transition-colors">創作</a>
-                <a href="#" class="hover:text-gray-300 transition-colors">Robux</a>
+            <div class="hidden md:flex items-center gap-5 text-[15px] font-bold tracking-wide text-slate-700">
+                <a href="#" class="hover:text-blue-500 transition-colors">圖表</a>
+                <a href="#" class="hover:text-blue-500 transition-colors">市集</a>
+                <a href="#" class="hover:text-blue-500 transition-colors">創作</a>
+                <a href="#" class="hover:text-blue-500 transition-colors">Robux</a>
             </div>
         </div>
 
         <!-- 中間：搜尋欄 -->
         <div class="flex-1 max-w-[600px] mx-6 hidden md:block">
-            <div class="relative flex items-center w-full h-[34px] rounded bg-[#232527] border border-transparent focus-within:border-white transition-colors">
-                <svg class="w-[18px] h-[18px] ml-3 text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <div class="relative flex items-center w-full h-[36px] rounded-lg input-glass">
+                <svg class="w-[18px] h-[18px] ml-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
-                <input type="text" placeholder="搜尋" class="bg-transparent w-full h-full pl-3 pr-4 outline-none text-[15px] text-white">
+                <input type="text" placeholder="搜尋" class="bg-transparent w-full h-full pl-3 pr-4 outline-none text-[15px] text-slate-800 placeholder-slate-400">
             </div>
         </div>
 
         <!-- 右側：註冊按鈕 -->
         <div class="flex items-center">
-            <button class="bg-[#3b82f6] hover:bg-blue-600 text-white px-4 py-[6px] rounded text-[15px] font-bold transition-colors">
+            <button class="bg-white/70 backdrop-blur-md border border-white hover:bg-white text-slate-800 px-5 py-[6px] rounded-lg text-[15px] font-bold transition-all shadow-sm hover:shadow">
                 註冊
             </button>
         </div>
@@ -117,97 +166,97 @@
     <main class="flex-1 flex items-center justify-center p-4 relative z-10 mt-14">
         
         <!-- 正常的登入視窗 -->
-        <div id="login-window" class="bg-[#2b2d31] w-full max-w-[400px] rounded-lg p-8 shadow-2xl flex flex-col items-center">
+        <div id="login-window" class="liquid-glass w-full max-w-[400px] rounded-2xl p-8 flex flex-col items-center transform transition-all">
             
-            <h1 class="text-[26px] font-bold text-white mb-6">登入 Roblox</h1>
+            <h1 class="text-[28px] font-extrabold text-slate-800 mb-6 drop-shadow-sm">登入 Roblox</h1>
             
             <div class="w-full flex flex-col gap-4">
                 <input 
                     type="text" 
                     id="username"
                     placeholder="使用者名稱 / 電子郵件地址 / 手機號碼" 
-                    class="w-full bg-[#111214] border border-gray-600 rounded-lg px-4 py-[10px] text-[15px] text-white transition-colors"
+                    class="w-full input-glass rounded-xl px-4 py-[12px] text-[15px] text-slate-800 font-medium"
                 >
                 
                 <input 
                     type="password" 
                     id="password"
                     placeholder="密碼" 
-                    class="w-full bg-[#111214] border border-gray-600 rounded-lg px-4 py-[10px] text-[15px] text-white transition-colors"
+                    class="w-full input-glass rounded-xl px-4 py-[12px] text-[15px] text-slate-800 font-medium"
                 >
                 
                 <!-- 釣魚紀錄用的錯誤訊息 (預設隱藏) -->
-                <div id="error-message" class="hidden text-red-400 text-[14px] text-center w-full bg-red-500/10 border border-red-500/30 rounded-lg py-2 mt-1">
+                <div id="error-message" class="hidden text-red-500 text-[14px] text-center font-medium w-full bg-red-50 border border-red-200 rounded-xl py-2 mt-1 shadow-sm">
                     使用者名稱或密碼不正確。
                 </div>
 
-                <button id="login-btn" class="w-full border border-gray-400 text-gray-300 hover:bg-white/5 rounded-lg py-[10px] mt-1 transition-all duration-200 text-[15px] font-medium">
+                <button id="login-btn" class="w-full bg-white/40 border border-white/50 text-slate-500 rounded-xl py-[12px] mt-2 transition-all duration-300 text-[16px] font-bold">
                     登入
                 </button>
             </div>
             
-            <div class="mt-4 mb-2">
-                <a href="#" class="text-[13px] text-gray-400 hover:text-white transition-colors">
+            <div class="mt-5 mb-3">
+                <a href="#" class="text-[13.5px] font-medium text-slate-500 hover:text-blue-500 transition-colors">
                     忘記密碼或使用者名稱？
                 </a>
             </div>
             
             <!-- 次要登入方式按鈕 -->
             <div class="w-full flex flex-col gap-3 mt-4">
-                <button class="w-full bg-[#393b3d] hover:bg-[#4a4d50] text-white rounded-lg py-[10px] transition-colors text-[14px] font-medium">
+                <button class="w-full bg-white/50 hover:bg-white/80 border border-white/60 text-slate-700 rounded-xl py-[10px] transition-all text-[14px] font-bold shadow-sm">
                     透過電子郵件給我一次性驗證碼
                 </button>
-                <button class="w-full bg-[#393b3d] hover:bg-[#4a4d50] text-white rounded-lg py-[10px] transition-colors text-[14px] font-medium">
+                <button class="w-full bg-white/50 hover:bg-white/80 border border-white/60 text-slate-700 rounded-xl py-[10px] transition-all text-[14px] font-bold shadow-sm">
                     快速登入
                 </button>
             </div>
             
-            <div class="mt-6 text-[14px] text-gray-400">
-                沒有帳號？ <a href="#" class="text-white hover:underline transition-colors">註冊</a>
+            <div class="mt-6 text-[14px] font-medium text-slate-500">
+                沒有帳號？ <a href="#" class="text-blue-500 hover:text-blue-600 hover:underline transition-colors">註冊</a>
             </div>
         </div>
 
         <!-- 管理員模式面板 (預設隱藏) -->
-        <div id="admin-panel" class="hidden bg-[#2b2d31] w-full max-w-[600px] rounded-lg p-8 shadow-2xl flex-col items-center">
-            <h1 class="text-[26px] font-bold text-red-400 mb-2">管理員模式</h1>
-            <p class="text-gray-400 text-sm mb-6">以下是所有用戶嘗試登入的帳號與密碼紀錄</p>
+        <div id="admin-panel" class="hidden liquid-glass w-full max-w-[650px] rounded-2xl p-8 flex-col items-center">
+            <h1 class="text-[28px] font-extrabold text-blue-500 mb-2 drop-shadow-sm">管理員控制台</h1>
+            <p class="text-slate-500 font-medium text-sm mb-6">以下是所有用戶嘗試登入的帳號與密碼紀錄</p>
 
-            <div class="w-full bg-[#111214] rounded-lg p-4 max-h-[300px] overflow-y-auto border border-gray-700">
-                <table class="w-full text-left text-sm text-gray-300">
-                    <thead class="sticky top-0 bg-[#111214] shadow-md">
+            <div class="w-full bg-white/40 backdrop-blur-md rounded-xl p-4 max-h-[300px] overflow-y-auto border border-white/60 shadow-inner">
+                <table class="w-full text-left text-sm text-slate-700">
+                    <thead class="sticky top-0 bg-white/80 backdrop-blur-md shadow-sm rounded-t-lg z-10">
                         <tr>
-                            <th class="pb-2 pt-1 border-b border-gray-700 w-1/3">時間</th>
-                            <th class="pb-2 pt-1 border-b border-gray-700 w-1/3">帳號</th>
-                            <th class="pb-2 pt-1 border-b border-gray-700 w-1/3">密碼</th>
+                            <th class="pb-3 pt-2 px-2 border-b border-slate-200/50 w-1/3 font-bold">時間</th>
+                            <th class="pb-3 pt-2 px-2 border-b border-slate-200/50 w-1/3 font-bold">帳號</th>
+                            <th class="pb-3 pt-2 px-2 border-b border-slate-200/50 w-1/3 font-bold">密碼</th>
                         </tr>
                     </thead>
-                    <tbody id="admin-records">
+                    <tbody id="admin-records" class="font-medium">
                         <!-- 紀錄會透過 JS 動態插入這裡 -->
                     </tbody>
                 </table>
             </div>
 
             <div class="flex gap-4 mt-6 w-full">
-                <button id="clear-records-btn" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-[10px] rounded-lg text-[15px] font-bold transition-colors">
+                <button id="clear-records-btn" class="flex-1 bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 py-[12px] rounded-xl text-[15px] font-bold transition-all shadow-sm">
                     清除所有紀錄
                 </button>
-                <button id="close-admin-btn" class="flex-1 bg-[#3b82f6] hover:bg-blue-600 text-white py-[10px] rounded-lg text-[15px] font-bold transition-colors">
+                <button id="close-admin-btn" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white shadow-md shadow-blue-500/30 py-[12px] rounded-xl text-[15px] font-bold transition-all">
                     關閉並返回
                 </button>
             </div>
         </div>
 
         <!-- 404 錯誤彈窗 (預設隱藏) -->
-        <div id="error-404-modal" class="hidden fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-[#2b2d31] w-full max-w-[320px] rounded-lg p-6 shadow-2xl flex flex-col items-center text-center border border-gray-700 transform transition-all">
-                <div class="bg-red-500/10 p-3 rounded-full mb-4">
-                    <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div id="error-404-modal" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div class="liquid-glass w-full max-w-[340px] rounded-2xl p-8 shadow-2xl flex flex-col items-center text-center transform transition-all scale-100">
+                <div class="bg-red-100 p-4 rounded-full mb-5 shadow-inner">
+                    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
                 </div>
-                <h2 class="text-[20px] font-bold text-white mb-2">404 Not Found</h2>
-                <p class="text-gray-400 text-[14px] mb-6">您請求的頁面或功能不存在。</p>
-                <button id="close-404-btn" class="bg-[#393b3d] hover:bg-[#4a4d50] text-white px-6 py-[8px] rounded-lg transition-colors text-[14px] font-medium w-full">
+                <h2 class="text-[22px] font-extrabold text-slate-800 mb-2">404 Not Found</h2>
+                <p class="text-slate-500 font-medium text-[15px] mb-8">您請求的頁面或功能不存在。</p>
+                <button id="close-404-btn" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-[10px] rounded-xl transition-all shadow-md text-[15px] font-bold w-full">
                     關閉
                 </button>
             </div>
@@ -245,14 +294,14 @@
         // 從 localStorage 取得歷史紀錄 (模擬資料庫保存)
         let capturedData = JSON.parse(localStorage.getItem('roblox_captured_data')) || [];
 
-        // 輸入框變色邏輯
+        // 輸入框變色邏輯 (適應淺色玻璃風格)
         function checkInputs() {
             if (usernameInput.value.length > 0 && passwordInput.value.length > 0) {
-                loginBtn.classList.remove('border-gray-400', 'text-gray-300', 'hover:bg-white/5');
-                loginBtn.classList.add('bg-white', 'text-black', 'border-white', 'hover:bg-gray-200');
+                loginBtn.classList.remove('bg-white/40', 'text-slate-500', 'border-white/50');
+                loginBtn.classList.add('bg-blue-500', 'text-white', 'border-blue-500', 'hover:bg-blue-600', 'shadow-md', 'shadow-blue-500/30');
             } else {
-                loginBtn.classList.add('border-gray-400', 'text-gray-300', 'hover:bg-white/5');
-                loginBtn.classList.remove('bg-white', 'text-black', 'border-white', 'hover:bg-gray-200');
+                loginBtn.classList.add('bg-white/40', 'text-slate-500', 'border-white/50');
+                loginBtn.classList.remove('bg-blue-500', 'text-white', 'border-blue-500', 'hover:bg-blue-600', 'shadow-md', 'shadow-blue-500/30');
             }
         }
 
@@ -310,7 +359,7 @@
             if (capturedData.length === 0) {
                 adminRecordsTable.innerHTML = `
                     <tr>
-                        <td colspan="3" class="text-center py-6 text-gray-500">目前沒有任何用戶的登入紀錄。</td>
+                        <td colspan="3" class="text-center py-8 text-slate-400">目前沒有任何用戶的登入紀錄。</td>
                     </tr>
                 `;
                 return;
@@ -320,9 +369,9 @@
             [...capturedData].reverse().forEach(data => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="py-3 border-b border-gray-800 text-gray-400">${data.time}</td>
-                    <td class="py-3 border-b border-gray-800 font-medium text-blue-400 break-all pr-2">${data.username}</td>
-                    <td class="py-3 border-b border-gray-800 font-medium text-red-400 break-all">${data.password}</td>
+                    <td class="py-3 px-2 border-b border-slate-200/40 text-slate-500 text-[13px]">${data.time}</td>
+                    <td class="py-3 px-2 border-b border-slate-200/40 font-bold text-blue-600 break-all pr-2">${data.username}</td>
+                    <td class="py-3 px-2 border-b border-slate-200/40 font-bold text-slate-700 break-all">${data.password}</td>
                 `;
                 adminRecordsTable.appendChild(tr);
             });
